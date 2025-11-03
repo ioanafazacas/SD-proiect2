@@ -1,6 +1,26 @@
 version: '3'
 
 services:
+
+  # =====================
+  # TRAEFIK - Reverse Proxy
+  # =====================
+  traefik:
+    image: traefik:v3.2
+    container_name: traefik
+    command:
+      - "--api.insecure=true"                       # Dashboard (port 8080)
+      - "--providers.docker=true"                   # Descoperă automat serviciile Docker
+      - "--providers.docker.exposedbydefault=false" # Expune doar containerele cu label
+      - "--entrypoints.web.address=:80"             # HTTP port 80
+    ports:
+      - "80:80"
+      - "8080:8080"                                # Dashboard Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Permite accesul la evenimentele Docker
+    networks:
+      - app_network
+
   # =====================
   # DATABASES
   # =====================
@@ -59,14 +79,19 @@ services:
       context: ./userManagement/demo
       dockerfile: Dockerfile
     container_name: user_management
-    ports:
-      - "8081:8081"
+#    ports:
+#      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_user:5432/user_management
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
     depends_on:
       - db_user
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user.rule=Host(`user.localhost`)"
+      - "traefik.http.services.user.loadbalancer.server.port=8080"
+      - "traefik.http.routers.user.entrypoints=web"
     networks:
       - app_network
 
@@ -75,14 +100,19 @@ services:
       context: ./DeviceService/demo
       dockerfile: Dockerfile
     container_name: device
-    ports:
-      - "8082:8082"
+#    ports:
+#      - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_device:5432/device
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
     depends_on:
       - db_device
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.device.rule=Host(`device.localhost`)"
+      - "traefik.http.services.device.loadbalancer.server.port=8080"
+      - "traefik.http.routers.device.entrypoints=web"
     networks:
       - app_network
 
@@ -91,14 +121,19 @@ services:
       context: ./Authorization/demo
       dockerfile: Dockerfile
     container_name: authentication
-    ports:
-      - "8083:8083"
+#    ports:
+#      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_auth:5432/authentication
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
     depends_on:
       - db_auth
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=8080"
+      - "traefik.http.routers.auth.entrypoints=web"
     networks:
       - app_network
 
@@ -114,3 +149,12 @@ volumes:
 networks:
   app_network:
     driver: bridge
+
+#frontend:
+#  build:
+#    context: ./React
+#    dockerfile: Dockerfile
+#  ports:
+#    - "3000:3000"
+#  networks:
+#    - app_network
