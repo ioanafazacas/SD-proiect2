@@ -146,6 +146,11 @@ services:
       - authentication
       - user_management
       - device
+    volumes:
+      - ./React:/app           # 🔥 montează codul tău local
+      - /app/node_modules         # evită suprascrierea node_modules din container
+    environment:
+       - CHOKIDAR_USEPOLLING=true  # necesar pentru live reload în Docker
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"

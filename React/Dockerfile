@@ -2,7 +2,6 @@
 #LABEL authors="ioana"
 #
 #ENTRYPOINT ["top", "-b"]
-
 FROM node:20-alpine
 
 WORKDIR /app
@@ -10,8 +9,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-COPY . .
-
+# Nu mai copiem tot codul aici (volumul îl va monta)
 EXPOSE 3000
 
+# Setăm Vite să asculte pe toate interfețele
 CMD ["npm", "run", "dev", "--", "--host"]

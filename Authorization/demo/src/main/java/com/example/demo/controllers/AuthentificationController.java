@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dtos.LoginResponseDTO;
 import com.example.demo.dtos.UserDTO;
 import com.example.demo.dtos.UserDetailsDTO;
 import com.example.demo.dtos.builders.LoginRequestDTO;
@@ -37,11 +38,16 @@ public class AuthentificationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO dto) {
-        System.out.println("login???");
-        System.out.println(dto);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+//        System.out.println("login???");
+//        System.out.println(dto);
         String jwt = userService.login(dto);
-        return ResponseEntity.ok(jwt);
+
+        UserDTO userDto = userService.getUserByUsername(dto.getUsername());
+
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(jwt, userDto);
+
+        return ResponseEntity.ok(loginResponseDTO);
     }
 
     @GetMapping("/me")
