@@ -5,4 +5,7 @@ export const createUser = async (user) =>
   (await axios.post('/users', user)).data;
 export const deleteUser = async (id) =>
   (await axios.delete(`/users/${id}`)).data;
-v
+
+export const userAPI = axios.create({
+  baseURL: 'http://user.localhost',
+});

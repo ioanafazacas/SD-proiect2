@@ -6,12 +6,14 @@ import java.util.UUID;
 public class UserDTO {
     private UUID user_id;
     private String username;
+    private String role;
 
     public UserDTO() {}
 
-    public UserDTO(UUID user_id, String username) {
+    public UserDTO(UUID user_id, String username, String role) {
         this.username = username;
         this.user_id = user_id;
+        this.role = role;
     }
 
     public UUID getUser_id() { return user_id; }
@@ -25,12 +27,19 @@ public class UserDTO {
         this.username = username;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     @Override public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         UserDTO that = (UserDTO) o;
-        return Objects.equals(username, that.username);
+        return Objects.equals(username, that.username) && Objects.equals(role, that.role);
     }
-    @Override public int hashCode() { return Objects.hash(username); }
+    @Override public int hashCode() { return Objects.hash(username, role); }
 }

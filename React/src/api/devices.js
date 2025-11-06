@@ -7,3 +7,7 @@ export const deleteDevice = async (id) =>
   (await axios.delete(`/devices/${id}`)).data;
 export const getDevicesByUser = async (userId) =>
   (await axios.get(`/devices/user/${userId}`)).data;
+
+export const deviceAPI = axios.create({
+  baseURL: 'http://device.localhost',
+});

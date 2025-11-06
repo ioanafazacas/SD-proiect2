@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-export const login = async (username, password) => {
-  const res = await axios.post('/auth/login', { username, password });
-  return res.data;
-};
+export const authAPI = axios.create({
+  baseURL: 'http://auth.localhost',
+});
+
+// opțional: intercepțiune pentru token automat
+authAPI.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
