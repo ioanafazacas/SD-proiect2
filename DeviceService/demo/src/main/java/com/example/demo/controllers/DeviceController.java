@@ -29,7 +29,7 @@ public class DeviceController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Void> create(@Valid @RequestBody DeviceDTO deviceDTO) {
+    public ResponseEntity<DeviceDTO> create(@Valid @RequestBody DeviceDTO deviceDTO) {
         UUID id = deviceService.insert(deviceDTO);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -37,7 +37,8 @@ public class DeviceController {
                 .buildAndExpand(id)
                 .toUri();
         System.out.println(deviceDTO);
-        return ResponseEntity.created(location).build(); // 201 + Location header
+        DeviceDTO dto = deviceService.findDeviceById(id);
+        return ResponseEntity.ok(dto); // 201 + Location header
     }
 
     @GetMapping("/{id}")
