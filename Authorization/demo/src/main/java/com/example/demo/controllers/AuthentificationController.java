@@ -56,4 +56,16 @@ public class AuthentificationController {
         return ResponseEntity.ok(userDto);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        try {
+            userService.deleteUserById(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (Exception e) {
+            System.err.println("❌ Eroare la ștergerea utilizatorului din AUTH: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+
 }
