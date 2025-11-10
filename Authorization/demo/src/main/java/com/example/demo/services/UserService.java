@@ -152,4 +152,15 @@ public class UserService {
             return null;
         }
     }
+
+    public void deleteUserById(UUID id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            System.out.println("⚠️ User cu ID " + id + " nu există în auth_service.");
+            return;
+        }
+
+        userRepository.deleteById(id);
+        System.out.println("✅ User cu ID " + id + " a fost șters din auth_service.");
+    }
 }

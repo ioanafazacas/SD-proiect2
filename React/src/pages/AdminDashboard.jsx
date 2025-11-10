@@ -12,6 +12,8 @@ export default function AdminDashboard() {
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [editingDevice, setEditingDevice] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+
 
   const [formUser, setFormUser] = useState({
     username: "",
@@ -93,14 +95,25 @@ export default function AdminDashboard() {
         const res = await axios.put(`${USER_API}/${userId}`, formUser);
 
         setUsers(users.map((u) => (u.id === editingUser.id ? res.data : u)));
+
+        // ✅ mesaj de succes
+        setSuccessMessage("✅ Utilizatorul a fost actualizat cu succes!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+
+        setShowUserModal(false);
+
       } else {
         // CREATE
         const authRes = await axios.post(`${AUTH_API}/register`, formUser);
         const createdUser = authRes.data;
 
         if (createdUser && createdUser.id) {
-          console.log("✅ Creat în AUTH:", createdUser);
+          console.log('✅ Creat în AUTH:', createdUser);
           setUsers([...users, createdUser]);
+
+          // ✅ mesaj de succes pentru creare
+          setSuccessMessage('✅ Utilizatorul a fost creat cu succes!');
+          setTimeout(() => setSuccessMessage(''), 3000);
         } else {
           console.warn("⚠️ Backendul nu a returnat un utilizator valid:", createdUser);
         }
@@ -114,8 +127,18 @@ export default function AdminDashboard() {
 
   const handleDeleteUser = async (id) => {
     try {
-      await axios.delete(`${USER_API}/${id}`);
-      setUsers(users.filter((u) => u.id !== id));
+      const userId = id || (typeof id === "object" ? id.id || id.user_id : id);
+
+      await axios.delete(`${USER_API}/${userId}`);
+
+      // 🔥 actualizează lista locală eliminând userul
+      setUsers((prev) => prev.filter((u) => (u.id || u.user_id) !== userId));
+
+      // ✅ mesaj de succes pentru ștergere
+      setSuccessMessage("🗑️ Utilizatorul a fost șters cu succes!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+      console.log(`✅ Utilizatorul cu ID ${userId} a fost șters`);
     } catch (err) {
       console.error("❌ Eroare la ștergere user:", err);
     }

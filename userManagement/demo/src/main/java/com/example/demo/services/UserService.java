@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,8 +61,31 @@ public class UserService {
             throw new ResourceNotFoundException(User.class.getSimpleName() + " with id: " + id);
         }
 
-        userRepository.deleteById(id);
-        LOGGER.info("User with id {} has been deleted successfully", id);
+        try {
+            // 1️⃣ Ștergem din baza locală
+            userRepository.deleteById(id);
+            LOGGER.info("✅ User cu ID {} a fost șters din user_management", id);
+
+            // 2️⃣ Ștergem și din AUTH microservice
+            deleteUserFromAuthService(id);
+
+        } catch (Exception e) {
+            LOGGER.error("❌ Eroare la ștergerea userului: {}", e.getMessage());
+            throw new RuntimeException("Nu s-a putut șterge complet utilizatorul");
+        }
+    }
+
+    private void deleteUserFromAuthService(UUID id) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = "http://authentication:8080/auth/" + id;
+
+            restTemplate.delete(url);
+
+            LOGGER.info("✅ User cu ID {} a fost șters și din auth_service", id);
+        } catch (Exception e) {
+            LOGGER.error("⚠️ Nu s-a putut șterge userul din auth_service: {}", e.getMessage());
+        }
     }
 
     public UserDetailsDTO updateUser(UUID id, UserDetailsDTO userDetailsDTO) {
