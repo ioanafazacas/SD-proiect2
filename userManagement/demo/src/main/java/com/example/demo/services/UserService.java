@@ -8,7 +8,7 @@ import com.example.demo.entities.User;
 import com.example.demo.handlers.exceptions.model.ResourceNotFoundException;
 import com.example.demo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import org.jspecify.annotations.Nullable;
+//import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
