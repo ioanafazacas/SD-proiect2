@@ -5,37 +5,6 @@ Frontend-ul ReactJS comunică cu aceste servicii printr-un **API Gateway Traefik
 
 ---
 
-## 🚀 Arhitectura generală
-
-+-------------------+
-| React Frontend |
-| (localhost:3000) |
-+--------+----------+
-|
-v
-+-------------------+
-| Traefik Proxy |
-| (router / gateway)|
-+----+------+-------+
-| |
-v v
-+----------+-----------+
-| Auth Service |--> DB Auth (PostgreSQL:5435)
-| http://auth.localhost|
-
-+----------------------+
-| User Management |--> DB User (PostgreSQL:5433)
-| http://user.localhost|
-
-+----------------------+
-| Device Service |--> DB Device (PostgreSQL:5434)
-| http://device.localhost|
-
-+----------------------+
-
-
----
-
 ## 🧱 Microservicii
 
 ### 🔐 **Authentication Service**
@@ -91,61 +60,25 @@ docker ps
 
 #### Ar trebui să vezi:
 
-authentication
-
-user-management
-
-device
-
-frontend
-
-traefik
-
-db_auth, db_user, db_device
+- authentication
+- user-management
+- device
+- frontend
+- traefik
+- db_auth, db_user, db_device
 
 ### 3️⃣ Accesează serviciile:
-Serviciu	URL
-Frontend	http://localhost:3000
+-Serviciu	URL
+-Frontend	http://localhost:3000
 
-Auth Service	http://auth.localhost/swagger-ui.html
+-Auth Service	http://auth.localhost/swagger-ui.html
 
-User Service	http://user.localhost/swagger-ui.html
+-User Service	http://user.localhost/swagger-ui.html
 
-Device Service	http://device.localhost/swagger-ui.html
+-Device Service	http://device.localhost/swagger-ui.html
 
-Traefik Dashboard	http://localhost:8080/dashboard
+-Traefik Dashboard	http://localhost:8080/dashboard
 
-## 🧠 Tehnologii folosite
-Componentă	Tehnologie
-Frontend	ReactJS, TailwindCSS, Axios
-API Gateway	Traefik 3.2
-Backend (Microservicii)	Spring Boot 3.3.4
-Baze de date	PostgreSQL 15
-Build tools	Maven, Docker
-Documentație API	SpringDoc OpenAPI / Swagger UI
-Securitate	JWT, Spring Security
-🔄 Fluxuri principale
-🔐 Autentificare
-
-Utilizatorul se înregistrează prin auth.localhost/auth/register
-
-Primește JWT prin auth.localhost/auth/login
-
-Tokenul este folosit pentru autentificare pe celelalte servicii
-
-👥 Administrare utilizatori
-
-Adminul vizualizează utilizatori în frontend
-
-Poate edita sau șterge un utilizator
-
-La ștergere → se șterg și dispozitivele asociate (device-service + auth-service)
-
-⚙️ Gestionare dispozitive
-
-Fiecare dispozitiv are userId
-
-Dispozitivele pot fi adăugate, modificate sau șterse
 
 La ștergerea unui user → device-service șterge automat dispozitivele aferente
 
