@@ -55,10 +55,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://frontend.localhost")); // 🔥 permite frontend-ul tău
+        config.setAllowedOrigins(List.of("http://frontend.localhost"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedHeaders(List.of("*")); // ✅ Change this from specific headers to all headers
         config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization")); // ✅ Add this line to expose the Authorization header
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

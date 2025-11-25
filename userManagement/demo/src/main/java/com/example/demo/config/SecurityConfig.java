@@ -1,6 +1,5 @@
 package com.example.demo.config;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,7 +26,7 @@ public class SecurityConfig {
                     config.setAllowCredentials(true);
                     config.setAllowedOrigins(List.of(
                             "http://frontend.localhost",
-                            "http://authentication.localhost"
+                            "http://auth.localhost"
                     ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
@@ -36,13 +35,15 @@ public class SecurityConfig {
 
                 // 🔓 permitem toate cererile (pentru moment)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll() // ✅ permite crearea de user
+                        .requestMatchers(HttpMethod.POST, "/user/**").permitAll() // ✅ Specific matchers FIRST
+                        .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/user/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/user/**").permitAll()
+                        .anyRequest().permitAll() // ✅ Generic matcher LAST
                 );
 
         return http.build();
     }
-
 
     @Bean
     public CorsFilter corsFilter() {
@@ -58,5 +59,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
-
 }
