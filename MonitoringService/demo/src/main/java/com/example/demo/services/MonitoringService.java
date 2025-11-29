@@ -1,6 +1,6 @@
 package com.example.demo.services;
 
-
+import com.example.demo.dtos.ConsumptionStatsDTO;
 import com.example.demo.dtos.DeviceMeasurementDTO;
 import com.example.demo.dtos.HourlyConsumptionDTO;
 import com.example.demo.entities.DeviceInfo;
@@ -78,7 +78,6 @@ public class MonitoringService {
             hourly = existingOpt.get();
             hourly.setTotalConsumption(hourly.getTotalConsumption() + measurementValue);
             hourly.setExceeded(hourly.getTotalConsumption() > maxConsumption);
-
             LOGGER.info("📈 Updated hourly consumption for device {} at {}: total={}",
                     deviceId, hourTimestamp, hourly.getTotalConsumption());
         } else {
@@ -88,3 +87,102 @@ public class MonitoringService {
             LOGGER.info("✨ Created new hourly consumption for device {} at {}: total={}",
                     deviceId, hourTimestamp, hourly.getTotalConsumption());
         }
+
+        hourlyConsumptionRepository.save(hourly);
+    }
+
+    // Query methods for controller
+    public List<DeviceMeasurementDTO> getDeviceMeasurements(UUID deviceId) {
+        List<DeviceMeasurement> measurements = measurementRepository.findByDeviceId(deviceId);
+        return measurements.stream()
+                .map(this::toDeviceMeasurementDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DeviceMeasurementDTO> getDeviceMeasurementsInRange(UUID deviceId, LocalDateTime start, LocalDateTime end) {
+        List<DeviceMeasurement> measurements = measurementRepository.findByDeviceIdAndTimestampBetween(deviceId, start, end);
+        return measurements.stream()
+                .map(this::toDeviceMeasurementDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<HourlyConsumptionDTO> getHourlyConsumption(UUID deviceId) {
+        List<HourlyEnergyConsumption> consumption = hourlyConsumptionRepository.findByDeviceId(deviceId);
+        return consumption.stream()
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<HourlyConsumptionDTO> getHourlyConsumptionInRange(UUID deviceId, LocalDateTime start, LocalDateTime end) {
+        List<HourlyEnergyConsumption> consumption = hourlyConsumptionRepository.findByDeviceIdAndHourTimestampBetween(deviceId, start, end);
+        return consumption.stream()
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<HourlyConsumptionDTO> getAllExceededConsumption() {
+        List<HourlyEnergyConsumption> exceeded = hourlyConsumptionRepository.findAllExceeded();
+        return exceeded.stream()
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<HourlyConsumptionDTO> getDeviceExceededConsumption(UUID deviceId) {
+        List<HourlyEnergyConsumption> all = hourlyConsumptionRepository.findByDeviceId(deviceId);
+        return all.stream()
+                .filter(HourlyEnergyConsumption::isExceeded)
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<HourlyConsumptionDTO> getAllHourlyConsumption() {
+        List<HourlyEnergyConsumption> all = hourlyConsumptionRepository.findAll();
+        return all.stream()
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ConsumptionStatsDTO getConsumptionStats(UUID deviceId, LocalDateTime start, LocalDateTime end) {
+        List<HourlyEnergyConsumption> consumptions = hourlyConsumptionRepository.findByDeviceIdAndHourTimestampBetween(deviceId, start, end);
+
+        if (consumptions.isEmpty()) {
+            return null;
+        }
+
+        double totalConsumption = consumptions.stream()
+                .mapToDouble(HourlyEnergyConsumption::getTotalConsumption)
+                .sum();
+
+        double avgConsumption = totalConsumption / consumptions.size();
+
+        double maxConsumption = consumptions.stream()
+                .mapToDouble(HourlyEnergyConsumption::getTotalConsumption)
+                .max()
+                .orElse(0);
+
+        double minConsumption = consumptions.stream()
+                .mapToDouble(HourlyEnergyConsumption::getTotalConsumption)
+                .min()
+                .orElse(0);
+
+        long exceededCount = consumptions.stream()
+                .filter(HourlyEnergyConsumption::isExceeded)
+                .count();
+
+        return new ConsumptionStatsDTO(deviceId, totalConsumption, avgConsumption,
+                maxConsumption, minConsumption, exceededCount, consumptions.size());
+    }
+
+    // Helper methods to convert entities to DTOs
+    private DeviceMeasurementDTO toDeviceMeasurementDTO(DeviceMeasurement measurement) {
+        return new DeviceMeasurementDTO(
+                measurement.getTimestamp(),
+                measurement.getDeviceId(),
+                measurement.getMeasurementValue()
+        );
+    }
+
+    private HourlyConsumptionDTO toHourlyConsumptionDTO(HourlyEnergyConsumption consumption) {
+        return new HourlyConsumptionDTO(
+                consumption.getId(),
+                consumption
