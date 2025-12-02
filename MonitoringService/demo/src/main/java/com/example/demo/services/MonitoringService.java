@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -43,9 +45,16 @@ public class MonitoringService {
     @Transactional
     public void processMeasurement(DeviceMeasurementDTO dto) {
         // Save raw measurement
+        LocalDateTime localTimestamp =
+                Instant.ofEpochMilli(dto.getTimestamp())
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
+
+        LocalDateTime hourTimestamp =
+                localTimestamp.truncatedTo(ChronoUnit.HOURS);
         DeviceMeasurement measurement = new DeviceMeasurement(
                 dto.getDeviceId(),
-                dto.getTimestamp(),
+                localTimestamp,
                 dto.getMeasurementValue()
         );
         measurementRepository.save(measurement);
@@ -60,7 +69,7 @@ public class MonitoringService {
         DeviceInfo deviceInfo = deviceInfoOpt.get();
 
         // Calculate hourly consumption
-        LocalDateTime hourTimestamp = dto.getTimestamp().truncatedTo(ChronoUnit.HOURS);
+
         updateHourlyConsumption(dto.getDeviceId(), hourTimestamp,
                 dto.getMeasurementValue(), deviceInfo.getMaxConsumption());
     }
@@ -175,8 +184,14 @@ public class MonitoringService {
 
     // Helper methods to convert entities to DTOs
     private DeviceMeasurementDTO toDeviceMeasurementDTO(DeviceMeasurement measurement) {
+// conversie LocalDateTime → long epoch millis
+        long timestampMillis = measurement.getTimestamp()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+
         return new DeviceMeasurementDTO(
-                measurement.getTimestamp(),
+                timestampMillis,
                 measurement.getDeviceId(),
                 measurement.getMeasurementValue()
         );

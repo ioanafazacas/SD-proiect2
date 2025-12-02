@@ -8,7 +8,7 @@ import java.util.UUID;
 public class DeviceMeasurementDTO {
 
     @JsonProperty("timestamp")
-    private LocalDateTime timestamp;
+    private long timestamp;
 
     @JsonProperty("device_id")
     private UUID deviceId;
@@ -18,18 +18,18 @@ public class DeviceMeasurementDTO {
 
     public DeviceMeasurementDTO() {}
 
-    public DeviceMeasurementDTO(LocalDateTime timestamp, UUID deviceId, double measurementValue) {
+    public DeviceMeasurementDTO(long timestamp, UUID deviceId, double measurementValue) {
         this.timestamp = timestamp;
         this.deviceId = deviceId;
         this.measurementValue = measurementValue;
     }
 
     // Getters and Setters
-    public LocalDateTime getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

@@ -1,7 +1,8 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.UserDTO;
 import com.example.demo.dtos.UserDetailsDTO;
+import com.example.demo.dtos.UserSyncDTO;
+import com.example.demo.producers.UserSyncProducer;
 import com.example.demo.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,11 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserSyncProducer userSyncProducer;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserSyncProducer userSyncProducer) {
         this.userService = userService;
+        this.userSyncProducer = userSyncProducer;
     }
 
     @GetMapping
@@ -42,6 +45,14 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Void> create(@Valid @RequestBody UserDetailsDTO user) {
         UUID id = userService.insert(user);
+
+        // Send sync message to DeviceService
+        UserSyncDTO syncDTO = new UserSyncDTO(
+                 id,
+                "CREATE"
+        );
+        userSyncProducer.sendUser(syncDTO);
+
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -66,6 +77,12 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteById(id);
+        // Send sync message to DeviceService
+        UserSyncDTO syncDTO = new UserSyncDTO(
+                id,
+                "DELETE"
+        );
+        userSyncProducer.sendUser(syncDTO);
         return ResponseEntity.noContent().build(); // HTTP 204
     }
 

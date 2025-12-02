@@ -21,7 +21,7 @@ public class SyncEventConsumer {
         this.syncService = syncService;
     }
 
-    @RabbitListener(queues = "synchronization.queue")
+    @RabbitListener(queues = "device-sync-queue")
     public void consumeSyncEvent(SyncEventDTO event) {
         try {
             LOGGER.info("🔄 Received sync event: type={}, entityId={}",

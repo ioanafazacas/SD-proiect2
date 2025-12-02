@@ -21,7 +21,7 @@ public class DeviceDataConsumer {
         this.monitoringService = monitoringService;
     }
 
-    @RabbitListener(queues = "device.data.queue")
+    @RabbitListener(queues = "device-measurement-queue")
     public void consumeDeviceData(DeviceMeasurementDTO measurement) {
         try {
             LOGGER.info("📊 Received measurement: device={}, value={}, timestamp={}",
