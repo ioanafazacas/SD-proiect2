@@ -26,7 +26,7 @@ public class UserSyncListener {
         this.userRepo = userRepo;
     }
 
-    @RabbitListener(queues = "device-sync-queue")
+    @RabbitListener(queues = "${rabbitmq.queue.user.sync}")
     public void onUserSync(UserSyncDTO event) {
         if (event.getOperation().equals("CREATE")) {
             userRepo.save(new Users(

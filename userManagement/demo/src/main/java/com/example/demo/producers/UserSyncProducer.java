@@ -17,7 +17,7 @@ public class UserSyncProducer {
     private String exchangeName;
 
 
-    @Value("${rabbitmq.routing.key.sync}")
+    @Value("${rabbitmq.routing.key.user}")
     private String syncRoutingKey;
 
     public UserSyncProducer(RabbitTemplate rabbitTemplate) {

@@ -18,6 +18,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.device.sync}")
     private String syncQueueName;
 
+    @Value("${rabbitmq.queue.user.sync}")
+    private String userQueueName;
+
     @Value("${rabbitmq.exchange.device}")
     private String exchangeName;
 
@@ -26,6 +29,9 @@ public class RabbitMQConfig {
 
     @Value("${rabbitmq.routing.key.sync}")
     private String syncRoutingKey;
+
+    @Value("${rabbitmq.routing.key.user}")
+    private String userRoutingKey;
 
     /**
      * Queue for device measurements
@@ -45,6 +51,12 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(syncQueueName)
                 .build();
     }
+
+    @Bean
+    public Queue userQueue() {
+        return QueueBuilder.durable(userQueueName).build();
+    }
+
 
     /**
      * Topic Exchange for device events
@@ -75,6 +87,18 @@ public class RabbitMQConfig {
                 .to(deviceExchange)
                 .with(syncRoutingKey);
     }
+
+    /**
+     * Binding user queue to exchange
+     */
+    @Bean
+    public Binding userSyncBinding(Queue userQueue, TopicExchange deviceExchange) {
+        return BindingBuilder
+                .bind(userQueue)
+                .to(deviceExchange)
+                .with(userRoutingKey);
+    }
+
 
     /**
      * JSON Message Converter for serialization
