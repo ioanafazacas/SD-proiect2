@@ -3,6 +3,32 @@ import json
 import time
 import random
 import psycopg2
+import os
+
+# -------------------------------
+# Load config.json
+# -------------------------------
+def load_config():
+    if not os.path.exists("config.json"):
+        print("[WARN] config.json not found. Using DB device list.")
+        return None
+
+    try:
+        with open("config.json", "r") as f:
+            data = json.load(f)
+            device_id = data.get("device_id", "").strip()
+
+            if device_id:
+                print(f"[CONFIG] Loaded device_id from config: {device_id}")
+                return device_id
+            else:
+                print("[CONFIG] No device_id set in config.json → using DB devices.")
+                return None
+
+    except Exception as e:
+        print("[ERROR] Could not read config.json:", e)
+        return None
+
 
 # -------------------------------
 # PostgreSQL connection
@@ -13,7 +39,7 @@ PG_DB   = "device"
 PG_USER = "postgres"
 PG_PASS = "SQLPostgres32"
 
-def load_device_ids():
+def load_device_ids_from_db():
     try:
         conn = psycopg2.connect(
             host=PG_HOST,
@@ -24,7 +50,6 @@ def load_device_ids():
         )
         cursor = conn.cursor()
 
-        # ❗ Ajustează dacă tabela ta se numește diferit
         cursor.execute("SELECT device_id FROM device;")
 
         devices = [row[0] for row in cursor.fetchall()]
@@ -32,7 +57,7 @@ def load_device_ids():
         cursor.close()
         conn.close()
 
-        print(f"[INFO] Loaded {len(devices)} device from DB.")
+        print(f"[INFO] Loaded {len(devices)} devices from DB.")
         return devices
 
     except Exception as e:
@@ -54,7 +79,7 @@ ROUTING_KEY = "device.measurement"
 
 
 # -------------------------------
-# Build measurement message
+# Build measurement
 # -------------------------------
 def build_measurement(device_id):
     return {
@@ -65,21 +90,26 @@ def build_measurement(device_id):
 
 
 # -------------------------------
-# MAIN LOOP
+# MAIN LOGIC
 # -------------------------------
-device_ids = load_device_ids()
+config_device = load_config()
+
+if config_device:
+    device_ids = [config_device]   # folosim doar device-ul din config
+else:
+    device_ids = load_device_ids_from_db()
 
 if not device_ids:
-    print("[ERROR] No devices found in DB. Exiting...")
+    print("[ERROR] No devices available. Exiting.")
     exit(1)
 
-print("[START] Device Simulator running...")
-print("[INFO] Sending new measurements every 10 seconds.")
+print("\n[START] Device Simulator running...")
+print("[INFO] Sending new measurements every 10 seconds.\n")
 
 while True:
     for device_id in device_ids:
-        message = build_measurement(device_id)
-        body = json.dumps(message)
+        measurement = build_measurement(device_id)
+        body = json.dumps(measurement)
 
         channel.basic_publish(
             exchange=EXCHANGE_NAME,
