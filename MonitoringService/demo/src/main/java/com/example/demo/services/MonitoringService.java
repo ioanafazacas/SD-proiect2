@@ -207,4 +207,19 @@ public class MonitoringService {
                 consumption.isExceeded()
         );
     }
+
+    public List<HourlyConsumptionDTO> getUserHourlyConsumptionInRange(UUID userId, LocalDateTime start, LocalDateTime end) {
+        List<DeviceInfo> userDevices = deviceInfoRepository.findByUserId(userId);
+
+        return userDevices.stream()
+                .flatMap(device -> {
+                    List<HourlyEnergyConsumption> consumption =
+                            hourlyConsumptionRepository.findByDeviceIdAndHourTimestampBetween(
+                                    device.getDeviceId(), start, end
+                            );
+                    return consumption.stream();
+                })
+                .map(this::toHourlyConsumptionDTO)
+                .collect(Collectors.toList());
+    }
 }

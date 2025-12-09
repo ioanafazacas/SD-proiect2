@@ -5,15 +5,19 @@ import com.example.demo.dtos.DeviceMeasurementDTO;
 import com.example.demo.dtos.HourlyConsumptionDTO;
 import com.example.demo.services.MonitoringService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +32,44 @@ public class MonitoringController {
     @Autowired
     public MonitoringController(MonitoringService monitoringService) {
         this.monitoringService = monitoringService;
+    }
+
+    @Operation(summary = "Get hourly consumption for a device for one day")
+    @GetMapping("/consumption/daily/{deviceId}")
+    public ResponseEntity<List<HourlyConsumptionDTO>> getDailyDeviceConsumption(
+            @PathVariable UUID deviceId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
+
+        List<HourlyConsumptionDTO> result =
+                monitoringService.getHourlyConsumptionInRange(deviceId, start, end);
+
+        return ResponseEntity.ok(result);
+    }
+
+
+    @Operation(
+            summary = "Get hourly consumption for multiple devices",
+            description = "Retrieves hourly consumption for all user's devices on a specific date"
+    )
+    @GetMapping("/consumption/daily/user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<HourlyConsumptionDTO>> getUserDailyConsumption(
+            @Parameter(description = "User ID")
+            @PathVariable UUID userId,
+
+            @Parameter(description = "Date in format yyyy-MM-dd", example = "2024-01-15")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        LocalDateTime startOfDay = LocalDateTime.of(date, LocalTime.MIN);
+        LocalDateTime endOfDay = LocalDateTime.of(date, LocalTime.MAX);
+
+        List<HourlyConsumptionDTO> consumption =
+                monitoringService.getUserHourlyConsumptionInRange(userId, startOfDay, endOfDay);
+
+        return ResponseEntity.ok(consumption);
     }
 
     @Operation(summary = "Get all measurements for a device")

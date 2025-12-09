@@ -198,8 +198,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
       - SERVER_PORT=8084
       - CLOUDAMQP_URL=${CLOUDAMQP_URL}
-    ports:
-      - "8084:8084"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.monitoring.rule=Host(`monitoring.localhost`)"
+      - "traefik.http.services.monitoring.loadbalancer.server.port=8084"
+      - "traefik.http.routers.monitoring.entrypoints=web"
+      - "traefik.http.routers.monitoring.middlewares=cors@file"
     networks:
       - app_network
     restart: unless-stopped

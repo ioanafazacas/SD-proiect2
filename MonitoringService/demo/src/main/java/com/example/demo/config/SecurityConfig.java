@@ -15,48 +15,38 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
-                // 🔓 dezactivăm CSRF (nu avem formulare web)
                 .csrf(csrf -> csrf.disable())
-
-                // 🌍 activăm CORS pentru frontend + alte servicii
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowCredentials(true);
-                    config.setAllowedOrigins(List.of(
-                            "http://frontend.localhost",
-                            "http://auth.localhost"
-                    ));
-                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowedHeaders(List.of("*"));
-                    return config;
-                }))
-
-                // 🔓 permitem toate cererile (pentru moment)
+                .cors(cors -> cors.configurationSource(corsConfig()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/user/**").permitAll() // ✅ Specific matchers FIRST
-                        .requestMatchers(HttpMethod.GET, "/user/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/user/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/user/**").permitAll()
-                        .anyRequest().permitAll() // ✅ Generic matcher LAST
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // VERY IMPORTANT
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
     }
 
     @Bean
-    public CorsFilter corsFilter() {
+    public UrlBasedCorsConfigurationSource corsConfig() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of(
-                "http://frontend.localhost"
+
+        // REQUIRED FOR CUSTOM DOMAINS LIKE *.localhost
+        config.setAllowedOriginPatterns(List.of(
+                "http://frontend.localhost",
+                "http://auth.localhost",
+                "http://device.localhost"
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+
+        return source;
     }
 }
