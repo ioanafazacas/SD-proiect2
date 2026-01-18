@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+
+  # =====================
+  # RABBITMQ
+  # =====================
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    deploy:
+      replicas: 1
+
+  # =====================
+  # DATABASE - MONITORING
+  # =====================
+  db_monitoring:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: SQLPostgres32
+    volumes:
+      - monitoring_db_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+
+  # =====================
+  # MONITORING SERVICE (REPLICAS)
+  # =====================
+  monitoring-service:
+    image: monitoring-service:latest
+    deploy:
+      replicas: 3
+    environment:
+      - INSTANCE_ID={{.Task.Slot}}
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_monitoring:5432/monitoring
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
+    depends_on:
+      - db_monitoring
+      - rabbitmq
+
+volumes:
+  monitoring_db_data:

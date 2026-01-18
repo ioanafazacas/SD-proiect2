@@ -21,14 +21,17 @@ public class DeviceDataConsumer {
         this.monitoringService = monitoringService;
     }
 
-    @RabbitListener(queues = "device-measurement-queue")
+    @RabbitListener(queues = "${monitoring.ingest.queue}")
     public void consumeDeviceData(DeviceMeasurementDTO measurement) {
         try {
             LOGGER.info("📊 Received measurement: device={}, value={}, timestamp={}",
                     measurement.getDeviceId(),
                     measurement.getMeasurementValue(),
                     measurement.getTimestamp());
-
+            System.out.println(
+                    "[MONITORING] Consumed message from " +
+                            System.getenv("INSTANCE_ID")
+            );
             monitoringService.processMeasurement(measurement);
 
         } catch (Exception e) {
