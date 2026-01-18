@@ -44,5 +44,13 @@ services:
       - db_monitoring
       - rabbitmq
 
+
+  load-balancer-service:
+    image: load-balancer-service:latest
+    depends_on:
+      - rabbitmq
+
+
+
 volumes:
   monitoring_db_data:

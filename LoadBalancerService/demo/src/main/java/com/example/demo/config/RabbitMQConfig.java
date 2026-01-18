@@ -13,7 +13,8 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     // Queue names
-    public static final String DEVICE_DATA_QUEUE = "device.data.queue";
+//    public static final String DEVICE_DATA_QUEUE = "device.data.queue";
+    public static final String DEVICE_DATA_QUEUE = "device-measurement-queue";
 
     // Exchange names
     public static final String DEVICE_DATA_EXCHANGE = "device.data.exchange";
@@ -22,9 +23,12 @@ public class RabbitMQConfig {
     public static final String DEVICE_DATA_ROUTING_KEY = "device.data";
 
 
+
+
     public static final String QUEUE_1 = "monitoring_ingest_1";
     public static final String QUEUE_2 = "monitoring_ingest_2";
     public static final String QUEUE_3 = "monitoring_ingest_3";
+
 
 
     // Device Data Queue Configuration

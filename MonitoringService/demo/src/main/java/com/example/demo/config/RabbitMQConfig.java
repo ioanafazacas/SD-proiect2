@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,43 +14,35 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     // Queue names
-    public static final String DEVICE_DATA_QUEUE = "device.data.queue";
-    public static final String SYNC_QUEUE = "synchronization.queue";
+
+    //public static final String SYNC_QUEUE = "synchronization.queue";
 
     // Exchange names
-    public static final String DEVICE_DATA_EXCHANGE = "device.data.exchange";
+
     public static final String SYNC_EXCHANGE = "synchronization.exchange";
 
     // Routing keys
-    public static final String DEVICE_DATA_ROUTING_KEY = "device.data";
+
     public static final String SYNC_ROUTING_KEY = "sync.event";
 
-    // Device Data Queue Configuration
-    @Bean
-    public Queue deviceDataQueue() {
-        return QueueBuilder.durable(DEVICE_DATA_QUEUE)
-                .build();
-    }
 
     @Bean
-    public TopicExchange deviceDataExchange() {
-        return new TopicExchange(DEVICE_DATA_EXCHANGE);
+    public Queue monitoringIngestQueue(@Value("${INSTANCE_ID}") String instanceId) {
+        return new Queue("monitoring_ingest_" + instanceId, true);
     }
 
-    @Bean
-    public Binding deviceDataBinding() {
-        return BindingBuilder
-                .bind(deviceDataQueue())
-                .to(deviceDataExchange())
-                .with(DEVICE_DATA_ROUTING_KEY);
-    }
 
-    // Synchronization Queue Configuration
+
     @Bean
     public Queue syncQueue() {
-        return QueueBuilder.durable(SYNC_QUEUE)
-                .build();
+        return QueueBuilder.durable("device-sync-queue").build();
     }
+    // Synchronization Queue Configuration
+//    @Bean
+//    public Queue syncQueue() {
+//        return QueueBuilder.durable(SYNC_QUEUE)
+//                .build();
+//    }
 
     @Bean
     public TopicExchange syncExchange() {
