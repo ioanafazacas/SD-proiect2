@@ -4,6 +4,12 @@ import react from '@vitejs/plugin-react';
 // Configurație pentru rularea locală + proxy către microservicii
 export default defineConfig({
   plugins: [react()],
+  define: {
+    global: "window"
+  },
+  optimizeDeps: {
+    include: ["sockjs-client"]
+  },
   server: {
     port: 3000,
     proxy: {
