@@ -4,6 +4,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Register from './pages/Register';
+import MonitoringLive from './components/MonitoringLive';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={['USER']} />}>
           <Route path="/user" element={<UserDashboard />} />
+          <Route path="/push" element={<MonitoringLive />} />
         </Route>
         <Route path="/register" element={<Register />} />
       </Routes>

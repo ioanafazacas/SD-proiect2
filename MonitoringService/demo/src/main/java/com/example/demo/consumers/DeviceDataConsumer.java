@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class DeviceDataConsumer {
@@ -15,10 +16,12 @@ public class DeviceDataConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceDataConsumer.class);
 
     private final MonitoringService monitoringService;
+    private final RestTemplate restTemplate;
 
     @Autowired
-    public DeviceDataConsumer(MonitoringService monitoringService) {
+    public DeviceDataConsumer(MonitoringService monitoringService, RestTemplate restTemplate) {
         this.monitoringService = monitoringService;
+        this.restTemplate = restTemplate;
     }
 
     @RabbitListener(
@@ -39,5 +42,20 @@ public class DeviceDataConsumer {
         } catch (Exception e) {
             LOGGER.error("❌ Error processing device measurement: {}", e.getMessage(), e);
         }
+    }
+
+    //am nevoie de o alta coada aici si vceva nu e bine la logica
+    @RabbitListener(queues = "device-sync-queue")
+    public void consumeSync(DeviceMeasurementDTO dto) {
+
+        // 1️⃣ Salvează în DB
+        monitoringService.processMeasurement(dto);
+
+        // 2️⃣ Trimite către WebSocketService
+        restTemplate.postForObject(
+                "http://websocket-service:8085/push/measurement",
+                dto,
+                Void.class
+        );
     }
 }

@@ -72,24 +72,24 @@ services:
     networks:
       - app_network
 
-  db_monitoring:
-    image: postgres:15
-    container_name: db_monitoring
-    environment:
-      POSTGRES_DB: monitoring
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: SQLPostgres32
-    ports:
-      - "5436:5432"
-    volumes:
-      - monitoring_db_data:/var/lib/postgresql/data
-    networks:
-      - app_network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#  db_monitoring:
+#    image: postgres:15
+#    container_name: db_monitoring
+#    environment:
+#      POSTGRES_DB: monitoring
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: SQLPostgres32
+#    ports:
+#      - "5436:5432"
+#    volumes:
+#      - monitoring_db_data:/var/lib/postgresql/data
+#    networks:
+#      - app_network
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
 
   # =====================
   # MICROSERVICES
@@ -98,13 +98,13 @@ services:
   user-management:
     build:
       context: ./userManagement/demo
-      dockerfile: Dockerfile
+      #dockerfile: Dockerfile
     container_name: user-management
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_user:5432/user_management
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
-      CLOUDAMQP_URL: ${CLOUDAMQP_URL}
+      #CLOUDAMQP_URL: ${CLOUDAMQP_URL}
     depends_on:
       - db_user
     labels:
@@ -119,13 +119,13 @@ services:
   device:
     build:
       context: ./DeviceService/demo
-      dockerfile: Dockerfile
+      #dockerfile: Dockerfile
     container_name: device
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_device:5432/device
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
-      CLOUDAMQP_URL: ${CLOUDAMQP_URL}
+      #CLOUDAMQP_URL: ${CLOUDAMQP_URL}
     depends_on:
       - db_device
     labels:
@@ -140,13 +140,13 @@ services:
   authentication:
     build:
       context: ./Authorization/demo
-      dockerfile: Dockerfile
+      #dockerfile: Dockerfile
     container_name: authentication
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db_auth:5432/authentication
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: SQLPostgres32
-      CLOUDAMQP_URL: ${CLOUDAMQP_URL}
+      #CLOUDAMQP_URL: ${CLOUDAMQP_URL}
     depends_on:
       - db_auth
     labels:
@@ -161,7 +161,7 @@ services:
   frontend:
     build:
       context: ./React
-      dockerfile: Dockerfile
+      #dockerfile: Dockerfile
     container_name: frontend
     ports:
       - "3000:3000"
@@ -183,35 +183,47 @@ services:
     networks:
       - app_network
 
-  monitoring-service:
-    build:
-      context: ./MonitoringService/demo
-      dockerfile: Dockerfile
-    container_name: monitoring-service
-    depends_on:
-      db_monitoring:
-        condition: service_healthy
+#  monitoring-service:
+#    build:
+#      context: ./MonitoringService/demo
+#      dockerfile: Dockerfile
+#    container_name: monitoring-service
+#    depends_on:
+#      db_monitoring:
+#        condition: service_healthy
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_monitoring:5432/monitoring
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
+#      - SERVER_PORT=8084
+#      - CLOUDAMQP_URL=${CLOUDAMQP_URL}
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.monitoring.rule=Host(`monitoring.localhost`)"
+#      - "traefik.http.services.monitoring.loadbalancer.server.port=8084"
+#      - "traefik.http.routers.monitoring.entrypoints=web"
+#      - "traefik.http.routers.monitoring.middlewares=cors@file"
+#    networks:
+#      - app_network
+#    restart: unless-stopped
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://localhost:8084/monitoring/health" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 3
+
+  websocket-service:
+    build: ./WebSocketService/demo
+    container_name: websocket-service
+    ports:
+      - "8085:8085"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_monitoring:5432/monitoring
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
-      - SERVER_PORT=8084
+      - INSTANCE_ID=ws
       - CLOUDAMQP_URL=${CLOUDAMQP_URL}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.monitoring.rule=Host(`monitoring.localhost`)"
-      - "traefik.http.services.monitoring.loadbalancer.server.port=8084"
-      - "traefik.http.routers.monitoring.entrypoints=web"
-      - "traefik.http.routers.monitoring.middlewares=cors@file"
     networks:
       - app_network
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8084/monitoring/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+
 
 
 # =====================
@@ -222,7 +234,7 @@ volumes:
   user_data:
   device_data:
   auth_data:
-  monitoring_db_data:
+  #monitoring_db_data:
 
 networks:
   app_network:

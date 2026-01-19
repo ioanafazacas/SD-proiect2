@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/monitoring")
+@RequestMapping("/load_balancer")
 @Validated
 @Tag(name = "Monitoring API", description = "Monitor device energy consumption and analyze data")
 public class LoadBalancerController {
