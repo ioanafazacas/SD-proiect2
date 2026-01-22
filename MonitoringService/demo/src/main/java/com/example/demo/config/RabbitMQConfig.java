@@ -31,7 +31,10 @@ public class RabbitMQConfig {
         return new Queue("monitoring_ingest_" + instanceId, true);
     }
 
-
+    @Bean
+    public Queue deviceSyncQueue() {
+        return new Queue("device-sync-queue", true);
+    }
 
     @Bean
     public Queue syncQueue() {

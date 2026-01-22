@@ -3,7 +3,9 @@ package com.example.demo.consumers;
 import com.example.demo.dtos.DeviceMeasurementDTO;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MonitoringConsumer {
     private final SimpMessagingTemplate template;
 
