@@ -27,6 +27,11 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.routing.key.sync}")
     private String syncRoutingKey;
 
+
+    @Bean
+    public Queue userSyncQueue() {
+        return new Queue("user-sync-queue", true); // durable queue
+    }
     /**
      * Queue for device measurements
      */
