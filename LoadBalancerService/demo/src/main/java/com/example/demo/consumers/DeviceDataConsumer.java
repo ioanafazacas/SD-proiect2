@@ -1,6 +1,7 @@
 package com.example.demo.consumers;
 
 
+import com.example.demo.config.RabbitMQConfig;
 import com.example.demo.dtos.DeviceMeasurementDTO;
 import com.example.demo.producers.MonitoringProducer;
 import com.example.demo.services.LoadBalancingService;
@@ -29,6 +30,7 @@ public class DeviceDataConsumer {
     }
 
     @RabbitListener(queues = "device-measurement-queue")
+    //@RabbitListener(queues = RabbitMQConfig.DEVICE_DATA_QUEUE)
     public void consume(DeviceMeasurementDTO measurement) {
         try {
             LOGGER.info("📊 Received measurement: device={}, value={}, timestamp={}",

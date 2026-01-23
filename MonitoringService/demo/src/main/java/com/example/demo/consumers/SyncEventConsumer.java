@@ -1,13 +1,16 @@
 package com.example.demo.consumers;
 
 
+import com.example.demo.dtos.DeviceMeasurementDTO;
 import com.example.demo.dtos.DeviceSyncDTO;
+import com.example.demo.services.MonitoringService;
 import com.example.demo.services.SyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class SyncEventConsumer {
@@ -34,4 +37,6 @@ public class SyncEventConsumer {
             LOGGER.error("❌ Error processing sync event: {}", e.getMessage(), e);
         }
     }
+
+
 }

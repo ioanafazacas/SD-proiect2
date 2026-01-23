@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
+    @Value("${INSTANCE_ID}")
+    private String instanceId;
 
     // Queue names
 
@@ -27,8 +29,9 @@ public class RabbitMQConfig {
 
 
     @Bean
-    public Queue monitoringIngestQueue(@Value("${INSTANCE_ID}") String instanceId) {
-        return new Queue("monitoring_ingest_" + instanceId, true);
+    public Queue monitoringIngestQueue() {
+        String queueName = "monitoring_ingest_" + instanceId;
+        return QueueBuilder.durable(queueName).build();
     }
 
     @Bean

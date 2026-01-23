@@ -2,20 +2,14 @@ version: "3.8"
 
 services:
 
-  # =====================
-  # RABBITMQ
-  # =====================
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    deploy:
-      replicas: 1
+#  rabbitmq:
+#    image: rabbitmq:3-management
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    deploy:
+#      replicas: 1
 
-  # =====================
-  # DATABASE - MONITORING
-  # =====================
   db_monitoring:
     image: postgres:15
     environment:
@@ -23,34 +17,79 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: SQLPostgres32
     volumes:
-      - monitoring_db_data:/var/lib/postgresql/data
+      - monitoring_db:/var/lib/postgresql/data
+    networks:
+      - monitoring-net
     deploy:
       replicas: 1
 
-  # =====================
-  # MONITORING SERVICE (REPLICAS)
-  # =====================
-  monitoring-service:
-    image: monitoring-service:latest
-    deploy:
-      replicas: 3
-    environment:
-      - INSTANCE_ID={{.Task.Slot}}
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_monitoring:5432/monitoring
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
-    depends_on:
-      - db_monitoring
-      - rabbitmq
-
+#  monitoring-service:
+#    image: monitoring-service:latest
+#    deploy:
+#      replicas: 3
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_monitoring:5432/monitoring
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=SQLPostgres32
+#
+#      # 🔥 CLOUD AMQP
+#      - SPRING_RABBITMQ_ADDRESSES=amqps://jmjawvis:q3zYxWxrYNWNmdI3Z8QDJgGXNn-IJKEJ@collie.lmq.cloudamqp.com/jmjawvis
 
   load-balancer-service:
     image: load-balancer-service:latest
+    deploy:
+      replicas: 1
+    environment:
+      # 🔥 CLOUD AMQP
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_ADDRESSES: amqps://jmjawvis:q3zYxWxrYNWNmdI3Z8QDJgGXNn-IJKEJ@collie.lmq.cloudamqp.com/jmjawvis
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_monitoring:5432/monitoring
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: SQLPostgres32
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    networks:
+      - monitoring-net
     depends_on:
-      - rabbitmq
+      - db_monitoring
 
+  monitoring-service:
+    image: monitoring-service:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
 
+      INSTANCE_ID: "{{.Task.Slot}}"
+      # CloudAMQP
+      SPRING_RABBITMQ_ADDRESSES: amqps://jmjawvis:q3zYxWxrYNWNmdI3Z8QDJgGXNn-IJKEJ@collie.lmq.cloudamqp.com/jmjawvis
 
+      # PostgreSQL
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_monitoring:5432/monitoring
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: SQLPostgres32
+
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+
+    networks:
+      - monitoring-net
+    deploy:
+      replicas: 3
+    depends_on:
+      - db_monitoring
+
+# =========================
+# VOLUMES
+# =========================
 volumes:
-  monitoring_db_data:
+  monitoring_db:
+
+# =========================
+# NETWORKS
+# =========================
+networks:
+  monitoring-net:
+    driver: overlay

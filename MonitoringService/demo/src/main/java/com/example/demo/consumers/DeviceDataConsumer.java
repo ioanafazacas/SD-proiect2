@@ -7,11 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
 public class DeviceDataConsumer {
+    @Value("${INSTANCE_ID}")
+    private String instanceId;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceDataConsumer.class);
 
@@ -24,10 +27,13 @@ public class DeviceDataConsumer {
         this.restTemplate = restTemplate;
     }
 
-    @RabbitListener(
-            queues = "#{monitoringIngestQueue.name}"
-    )
+    @RabbitListener(queues = "monitoring_ingest_${INSTANCE_ID}")
+    //@RabbitListener(queues = "monitoring_ingest")
     public void consumeDeviceData(DeviceMeasurementDTO measurement) {
+        System.out.println(
+                "[MONITORING " + instanceId + "] Received measurement for device "
+                        + measurement.getDeviceId()
+        );
         try {
             LOGGER.info("📊 Received measurement: device={}, value={}, timestamp={}",
                     measurement.getDeviceId(),
@@ -39,23 +45,16 @@ public class DeviceDataConsumer {
             );
             monitoringService.processMeasurement(measurement);
 
+            // 2️⃣ Trimite către WebSocketService
+            restTemplate.postForObject(
+                    "http://websocket-service:8085/push/measurement",
+                    measurement,
+                    Void.class
+            );
+
         } catch (Exception e) {
             LOGGER.error("❌ Error processing device measurement: {}", e.getMessage(), e);
         }
     }
 
-    //am nevoie de o alta coada aici si vceva nu e bine la logica
-    @RabbitListener(queues = "device-sync-queue")
-    public void consumeSync(DeviceMeasurementDTO dto) {
-
-        // 1️⃣ Salvează în DB
-        monitoringService.processMeasurement(dto);
-
-        // 2️⃣ Trimite către WebSocketService
-        restTemplate.postForObject(
-                "http://websocket-service:8085/push/measurement",
-                dto,
-                Void.class
-        );
-    }
 }

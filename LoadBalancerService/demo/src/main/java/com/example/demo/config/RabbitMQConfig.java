@@ -17,10 +17,10 @@ public class RabbitMQConfig {
     public static final String DEVICE_DATA_QUEUE = "device-measurement-queue";
 
     // Exchange names
-    public static final String DEVICE_DATA_EXCHANGE = "device.data.exchange";
+    public static final String DEVICE_DATA_EXCHANGE = "device-exchange";
 
     // Routing keys
-    public static final String DEVICE_DATA_ROUTING_KEY = "device.data";
+    public static final String DEVICE_DATA_ROUTING_KEY = "device.measurement";
 
 
 
@@ -40,7 +40,7 @@ public class RabbitMQConfig {
 
     @Bean
     public TopicExchange deviceDataExchange() {
-        return new TopicExchange(DEVICE_DATA_EXCHANGE);
+        return new TopicExchange(DEVICE_DATA_EXCHANGE, true, false);
     }
 
     @Bean
