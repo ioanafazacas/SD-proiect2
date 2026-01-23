@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import MonitoringLive from './components/MonitoringLive';
 //import CustomerSupportChat from './components/CustomerSuportChat';
 import OverconsumptionNotifications from './components/OverconsumptionNotifications';
+import SupportPage from './pages/SupportPage.jsx';
 
 function App() {
   return (
@@ -15,11 +16,13 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/support" element={<SupportPage />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={['USER']} />}>
           <Route path="/user" element={<UserDashboard />} />
           <Route path="/push" element={<MonitoringLive />} />
           <Route path="/alert" element={<OverconsumptionNotifications />} />
+          <Route path="/support" element={<SupportPage />} />
           {/*<Route path="/chat" element={<CustomerSupportChat />} />*/}
         </Route>
         <Route path="/register" element={<Register />} />

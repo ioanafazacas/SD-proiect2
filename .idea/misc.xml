@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/MonitoringService/demo/pom.xml" />
         <option value="$PROJECT_DIR$/LoadBalancerService/demo/pom.xml" />
         <option value="$PROJECT_DIR$/WebSocketService/demo/pom.xml" />
+        <option value="$PROJECT_DIR$/CustomerSupportService/demo/pom.xml" />
       </list>
     </option>
   </component>

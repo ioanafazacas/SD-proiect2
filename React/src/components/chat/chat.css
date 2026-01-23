@@ -1,0 +1,35 @@
+.chat-container {
+    width: 350px;
+    height: 450px;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.chat-message {
+    margin-bottom: 8px;
+}
+
+.chat-message.user {
+    text-align: right;
+    color: blue;
+}
+
+.chat-message.admin {
+    text-align: left;
+    color: green;
+}
+
+.chat-input {
+    display: flex;
+}
+
+.chat-input input {
+    flex: 1;
+}
